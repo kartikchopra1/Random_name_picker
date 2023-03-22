@@ -1,0 +1,112 @@
+<html>
+  <head>
+    <title> Random name generator </title>
+
+    <link rel='stylesheet' type='text/css' media='screen' href='https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css'>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+  </head>
+  <style>
+  textarea{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 3%;
+  }
+  </style>
+  <body>
+    <div class="header">
+  <a href="#default" class="logo">Sandy On Deck</a>
+  <div class="header-right">
+    <a class="active" href="#home">Randomizer</a>
+    <a href="#Back">Back</a>
+  </div>
+</div>
+    <textarea name="input_text" id="input_text" placeholder="Enter your list here seprated by ','
+    ╭────Example─────╮
+    john,
+    Sam,
+    Jamey,
+    ╰──────────────╯"></textarea>
+    <br>
+<div class="flex-parent jc-center">
+    <button id="rand" type="button" class="button button-81" pys-onClick="get_random_name">Pick!</button>
+    <button id="clear" type="button" class="button button-82" pys-onClick="clear">Clear</button>
+
+    <div style="width:150px; margin-left: 20px;">
+      <ol>
+          <li>
+            <label for="upload">Upload CSV file</label><input type="file" name="upload" id="upload">
+          </li>
+        </ol>
+</div>
+</div>
+    <div class="output">
+    <p><B>Winner!</p>
+    <p id="result"></p>
+  </B>
+  </div>
+
+  </body>
+  <py-script>
+    <!---generate a random number-->
+import random
+import asyncio
+import js
+from js import document, FileReader
+from pyodide import create_proxy
+
+input_text = Element("input_text")
+dp = Element("result")
+
+def get_random_name(*args, **kwargs):
+  text = input_text.value.split(',')
+  name = random.choice(text)
+
+  dp.write(name)
+
+<!---clear text------>
+
+def clear(*args, **kwargs):
+  input_text.clear()
+
+<!--Upload CSV----->
+
+def read_complete(event):
+  #event is ProgressEvent
+
+  input_text = document.getElementById("input_text");
+  input_text.innerText = event.target.result
+
+async def process_file(x):
+  fileList = document.getElementById('upload').files
+
+  for f in fileList:
+    # reader is a pyodide.JsProxy
+    reader = FileReader.new()
+
+    # Create a python proxy for the callback function
+    onload_event = create_proxy(read_complete)
+
+    #console.log("done")
+
+    reader.onload = onload_event
+
+    reader.readAsText(f)
+
+  return
+
+def main():
+ # Create a Python proxy for the callback funtion
+  file_event = create_proxy(process_file)
+
+  # set the listener to the callback
+  e = document.getElementById("upload")
+  e.addEventListener("change", file_event, False)
+
+main()
+  </py-script>
+</html>
